@@ -34,7 +34,7 @@ namespace PokemonGo.RocketAPI.Window
             else if (!isAdd && toolStripComboBox2.Items.Contains(client))
                 toolStripComboBox2.Items.Remove(client);
             else
-                return false;
+                ColoredConsoleWrite(Color.Red, "AddOrRemoveItemToComboBox Failed!!", client.Name);
             return true;
         }
 

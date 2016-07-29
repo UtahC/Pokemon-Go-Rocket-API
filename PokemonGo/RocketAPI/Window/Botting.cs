@@ -31,7 +31,9 @@ namespace PokemonGo.RocketAPI.Window
         public Dictionary<string, bool> ForceUnbanning = new Dictionary<string, bool>();
         public Dictionary<string, bool> FarmingStops = new Dictionary<string, bool>();
         public Dictionary<string, bool> FarmingPokemons = new Dictionary<string, bool>();
-        public Dictionary<string, int> TotalExperience = new Dictionary<string, int>();
+        public Dictionary<string, int> StardustStarted = new Dictionary<string, int>();
+        public Dictionary<string, long> ExpStarted = new Dictionary<string, long>();
+        public Dictionary<string, int> LevelStarted = new Dictionary<string, int>();
         public Dictionary<string, LocationManager> locationManagers = new Dictionary<string, LocationManager>();
         public DateTime TimeStarted = DateTime.Now;
         public DateTime InitSessionDateTime = DateTime.Now;
@@ -56,7 +58,9 @@ namespace PokemonGo.RocketAPI.Window
                 ForceUnbanning.Add(setting.Name, false);
                 FarmingStops.Add(setting.Name, false);
                 FarmingPokemons.Add(setting.Name, false);
-                TotalExperience.Add(setting.Name, 0);
+                StardustStarted.Add(setting.Name, 0);
+                LevelStarted.Add(setting.Name, 0);
+                ExpStarted.Add(setting.Name, 0);
                 locationManagers.Add(setting.Name, null);
                 ConsoleText.Add(setting.Name, new StringBuilder(25000, 50000));
 
@@ -97,7 +101,6 @@ namespace PokemonGo.RocketAPI.Window
                         _mainForm.ColoredConsoleWrite(Color.Green, "Logging in to Google account.", client.Name);
 
                         await client.DoGoogleLogin(setting.Email, setting.Password);
-
                         break;
                 }
 
@@ -110,9 +113,20 @@ namespace PokemonGo.RocketAPI.Window
                     inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon)
                         .Where(p => p != null && p?.PokemonId > 0);
 
-                //ConsoleLevelTitle(profile.Profile.Username, client);
-
-
+                if (StardustStarted[client.Name] <= 0)
+                {
+                    var stats = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.PlayerStats).ToArray();
+                    foreach (var v in stats)
+                    {
+                        if (v != null)
+                        {
+                            var XpDiff = GameData.GetXpRequired(v.Level);
+                            StardustStarted[client.Name] = profile.Profile.Currency.ToArray()[1].Amount;
+                            LevelStarted[client.Name] = v.Level;
+                            ExpStarted[client.Name] = v.Experience - v.PrevLevelXp - XpDiff;
+                        }
+                    }
+                }
 
                 // Write the players ingame details
                 _mainForm.ColoredConsoleWrite(Color.Yellow, "----------------------------", client.Name);
@@ -130,7 +144,7 @@ namespace PokemonGo.RocketAPI.Window
                 _mainForm.ColoredConsoleWrite(Color.DarkGray, "Team: " + profile.Profile.Team, client.Name);
                 if (profile.Profile.Currency.ToArray()[0].Amount > 0) // If player has any pokecoins it will show how many they have.
                     _mainForm.ColoredConsoleWrite(Color.DarkGray, "Pokecoins: " + profile.Profile.Currency.ToArray()[0].Amount, client.Name);
-                _mainForm.ColoredConsoleWrite(Color.DarkGray, "Stardust: " + profile.Profile.Currency.ToArray()[1].Amount + "\n", client.Name);
+                _mainForm.ColoredConsoleWrite(Color.DarkGray, "Stardust: " + StardustStarted[client.Name] + "\n", client.Name);
                 _mainForm.ColoredConsoleWrite(Color.DarkGray, "Latitude: " + setting.DefaultLatitude, client.Name);
                 _mainForm.ColoredConsoleWrite(Color.DarkGray, "Longitude: " + setting.DefaultLongitude, client.Name);
 
@@ -213,7 +227,7 @@ namespace PokemonGo.RocketAPI.Window
                 await locationManagers[client.Name].update(pokeStop.Latitude, pokeStop.Longitude);
                 var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
                 var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
-                if (fortInfo.Name != string.Empty && (fortSearch.ExperienceAwarded > 0 || GetFriendlyItemsString(fortSearch.ItemsAwarded) != string.Empty))
+                if (fortInfo.Name != string.Empty )
                 {
                     StringWriter PokeStopOutput = new StringWriter();
                     PokeStopOutput.Write($"");
@@ -229,8 +243,12 @@ namespace PokemonGo.RocketAPI.Window
                         PokeStopOutput.Write($", Items: {GetFriendlyItemsString(fortSearch.ItemsAwarded)} ");
                     _mainForm.ColoredConsoleWrite(Color.Cyan, PokeStopOutput.ToString(), client.Name);
 
-                    if (fortSearch.ExperienceAwarded != 0)
-                        TotalExperience[client.Name] += (fortSearch.ExperienceAwarded);
+                    if (fortSearch.ExperienceAwarded <= 0 && GetFriendlyItemsString(fortSearch.ItemsAwarded) == string.Empty)
+                        gotNothingFromStop++;
+                    else
+                        gotNothingFromStop = 0;
+                    if (gotNothingFromStop > 5)
+                        await ForceUnban(client);
 
                     var pokeStopMapObjects = await client.GetMapObjects();
 
@@ -251,12 +269,8 @@ namespace PokemonGo.RocketAPI.Window
 
                     if (settings[client.Name].CatchPokemon)
                         await ExecuteCatchAllNearbyPokemons(client);
-                    gotNothingFromStop = 0;
+                    
                 }
-                else
-                    gotNothingFromStop++;
-                if (gotNothingFromStop > 5)
-                    await ForceUnban(client);
             }
             FarmingStops[client.Name] = false;
             if (nextPokeStopList != null)
@@ -314,8 +328,6 @@ namespace PokemonGo.RocketAPI.Window
                 if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess)
                 {
                     _mainForm.ColoredConsoleWrite(Color.Green, $"We caught a {pokemonName} with {pokemonCP} CP and {pokemonIV}% IV", client.Name);
-                    foreach (int xp in caughtPokemonResponse.Scores.Xp)
-                        TotalExperience[client.Name] += xp;
                     TotalPokemon[client.Name] += 1;
                 }
                 else
@@ -749,7 +761,7 @@ namespace PokemonGo.RocketAPI.Window
             foreach (var v in stats)
                 if (v != null)
                 {
-                    int XpDiff = GameData.GetXpDiff(client, v.Level);
+                    int XpDiff = GameData.GetXpRequired(v.Level);
                     if (settings[client.Name].LevelOutput == "time")
                         _mainForm.ColoredConsoleWrite(Color.Yellow, $"Current Level: " + v.Level + " (" + (v.Experience - XpDiff) + "/" + (v.NextLevelXp - XpDiff) + ")", client.Name);
                     else if (settings[client.Name].LevelOutput == "levelup")
@@ -783,15 +795,17 @@ namespace PokemonGo.RocketAPI.Window
                 {
                     var username = profile.Profile.Username;
                     var level = v.Level;
-                    var XpDiff = GameData.GetXpDiff(client, v.Level);
-                    var runtime = _getSessionRuntimeInTimeFormat();
-                    var curExp = v.Experience - v.PrevLevelXp - XpDiff;
-                    var neededExp = v.NextLevelXp - v.PrevLevelXp - XpDiff;
+                    var XpRequired = GameData.GetXpRequired(level);
+                    var curExp = v.Experience - v.PrevLevelXp - XpRequired;
+                    var neededExp = v.NextLevelXp - v.PrevLevelXp - XpRequired;
+                    var XpDiff = GameData.GetXpDiff(level, (int)curExp, LevelStarted[client.Name], (int)ExpStarted[client.Name]);
+                    var expPerHr = Math.Round(XpDiff / GetRuntime());
                     var stardust = profile.Profile.Currency.ToArray()[1].Amount;
-                    var expPerHr = Math.Round(TotalExperience[client.Name] / GetRuntime());
+                    var stardustPerHr = Math.Round((stardust - StardustStarted[client.Name]) / GetRuntime());
                     var pokePerHr = Math.Round(TotalPokemon[client.Name] / GetRuntime());
+                    var runtime = _getSessionRuntimeInTimeFormat();
                     _mainForm.SetStatusText(
-                        $"{username} | Level: {level} - ({curExp} / {neededExp}) | Runtime {runtime} | Stardust: {stardust} | XP / Hour: {expPerHr} | Pokemon / Hour: {pokePerHr}");
+                        $"{username} | Level: {level} - ({curExp} / {neededExp}) | Runtime {runtime} | Stardust: {stardust} | Stardust / Hour: {stardustPerHr} | XP / Hour: {expPerHr} | Pokemon / Hour: {pokePerHr}");
                 }
             await Task.Delay(1000);
             if (!token.IsCancellationRequested)

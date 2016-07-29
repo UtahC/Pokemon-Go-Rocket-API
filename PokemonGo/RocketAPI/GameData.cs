@@ -8,7 +8,7 @@ namespace PokemonGo.RocketAPI
 {
     public static class GameData
     {
-        public static int GetXpDiff(Client client, int Level)
+        public static int GetXpRequired(int Level)
         {
             switch (Level)
             {
@@ -54,6 +54,18 @@ namespace PokemonGo.RocketAPI
                 case 40: return 1000000;
             }
             return 0;
+        }
+
+        public static int GetXpDiff(int level, int exp, int preLevel, int preExp)
+        {
+            if (level - preLevel == 0)
+                return exp - preExp;
+
+            int expDiff = exp;//the level now
+            expDiff += GetXpRequired(preLevel - 1) - preExp;// the preLevel
+            for (int lv = preLevel + 1; lv < level; lv++)
+                expDiff += GetXpRequired(lv - 1);
+            return expDiff;
         }
     }
 }
