@@ -1,4 +1,6 @@
-﻿namespace PokemonGo.RocketAPI.Window
+﻿using System;
+
+namespace PokemonGo.RocketAPI.Window
 {
     partial class MainForm
     {
@@ -153,6 +155,11 @@
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        private void forceUnbanToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

@@ -28,6 +28,8 @@ namespace PokemonGo.RocketAPI
 {
     public class Client
     {
+        public string Name { get; set; }
+
         private HttpClientRequester _httpClientRequester;
         private readonly HttpClient _httpClient;
         private ISettings _settings;
@@ -42,6 +44,8 @@ namespace PokemonGo.RocketAPI
 
         public Client(ISettings settings)
         {
+            Name = settings.Name;
+
             _settings = settings;
             SetCoordinates(_settings.DefaultLatitude, _settings.DefaultLongitude);
             _httpClientRequester = new HttpClientRequester();

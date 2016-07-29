@@ -15,34 +15,37 @@ namespace PokemonGo.RocketAPI.Window
 {
     partial class SettingsForm : Form
     {
-        public SettingsForm()
+        private ISettings _setting;
+
+        public SettingsForm(ISettings setting)
         {
             InitializeComponent();
+            _setting = setting;
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-            authTypeCb.Text = Settings.Instance.AuthType.ToString();
+            authTypeCb.Text = _setting.AuthType.ToString();
             if (authTypeCb.Text == "google")
             {
-                ptcUserText.Text = Settings.Instance.Email;
-                ptcPassText.Text = Settings.Instance.Password;
+                ptcUserText.Text = _setting.Email;
+                ptcPassText.Text = _setting.Password;
             }
             else
             {
-                ptcUserText.Text = Settings.Instance.PtcUsername;
-                ptcPassText.Text = Settings.Instance.PtcPassword;
+                ptcUserText.Text = _setting.PtcUsername;
+                ptcPassText.Text = _setting.PtcPassword;
             }
-            latitudeText.Text = Settings.Instance.DefaultLatitude.ToString();
-            longitudeText.Text = Settings.Instance.DefaultLongitude.ToString();
-            razzmodeCb.Text = Settings.Instance.RazzBerryMode;
-            razzSettingText.Text = Settings.Instance.RazzBerrySetting.ToString();
-            transferTypeCb.Text = Settings.Instance.TransferType;
-            transferCpThresText.Text = Settings.Instance.TransferCPThreshold.ToString();
-            transferIVThresText.Text = Settings.Instance.TransferIVThreshold.ToString();
-            evolveAllChk.Checked = Settings.Instance.EvolveAllGivenPokemons;
-            CatchPokemonBox.Checked = Settings.Instance.CatchPokemon;
-            TravelSpeedBox.Text = Settings.Instance.TravelSpeed.ToString();
+            latitudeText.Text = _setting.DefaultLatitude.ToString();
+            longitudeText.Text = _setting.DefaultLongitude.ToString();
+            razzmodeCb.Text = _setting.RazzBerryMode;
+            razzSettingText.Text = _setting.RazzBerrySetting.ToString();
+            transferTypeCb.Text = _setting.TransferType;
+            transferCpThresText.Text = _setting.TransferCPThreshold.ToString();
+            transferIVThresText.Text = _setting.TransferIVThreshold.ToString();
+            evolveAllChk.Checked = _setting.EvolveAllGivenPokemons;
+            CatchPokemonBox.Checked = _setting.CatchPokemon;
+            TravelSpeedBox.Text = _setting.TravelSpeed.ToString();
             // Initialize map:
             //use google provider
             gMapControl1.MapProvider = GoogleMapProvider.Instance;
@@ -73,36 +76,7 @@ namespace PokemonGo.RocketAPI.Window
 
         private void saveBtn_Click(object sender, EventArgs e)
         {
-            Settings.Instance.SetSetting(authTypeCb.Text, "AuthType");
-            if (authTypeCb.Text == "google")
-            {
-                Settings.Instance.SetSetting(ptcUserText.Text, "Email");
-                Settings.Instance.SetSetting(ptcPassText.Text, "Password");
-            }
-            else
-            {
-                Settings.Instance.SetSetting(ptcUserText.Text, "PtcUsername");
-                Settings.Instance.SetSetting(ptcPassText.Text, "PtcPassword");
-            }
-            Settings.Instance.SetSetting(latitudeText.Text.Replace(',', '.'), "DefaultLatitude");
-            Settings.Instance.SetSetting(longitudeText.Text.Replace(',', '.'), "DefaultLongitude");
-
-            string lat = ConfigurationManager.AppSettings["DefaultLatitude"];
-            string longit = ConfigurationManager.AppSettings["DefaultLongitude"];
-            lat.Replace(',', '.');
-            longit.Replace(',', '.');
-
-
-            Settings.Instance.SetSetting(razzmodeCb.Text, "RazzBerryMode");
-            Settings.Instance.SetSetting(razzSettingText.Text, "RazzBerrySetting");
-            Settings.Instance.SetSetting(transferTypeCb.Text, "TransferType");
-            Settings.Instance.SetSetting(transferCpThresText.Text, "TransferCPThreshold");
-            Settings.Instance.SetSetting(transferIVThresText.Text, "TransferIVThreshold");
-            Settings.Instance.SetSetting(TravelSpeedBox.Text, "TravelSpeed");
-            Settings.Instance.SetSetting(evolveAllChk.Checked ? "true" : "false", "EvolveAllGivenPokemons");
-            Settings.Instance.SetSetting(CatchPokemonBox.Checked ? "true" : "false", "CatchPokemon");
-            Settings.Instance.Reload();
-            Close();
+            MessageBox.Show("dont do that!");
         }
 
         private void authTypeCb_SelectedIndexChanged(object sender, EventArgs e)

@@ -17,10 +17,10 @@ namespace PokemonGo.RocketAPI.Window
     public partial class PokeUi : Form
     {
         private static Client client;
-        public PokeUi()
+        public PokeUi(ISettings setting)
         {
             InitializeComponent();
-            ClientSettings = Settings.Instance;
+            ClientSettings = setting;
         }
 
         private void PokeUi_Load(object sender, EventArgs e)

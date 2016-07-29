@@ -13,10 +13,10 @@ namespace PokemonGo.RocketAPI.Window
 {
     public partial class PokemonForm : Form
     {
-        public PokemonForm()
+        public PokemonForm(ISettings setting)
         {
             InitializeComponent();
-            ClientSettings = Settings.Instance;
+            ClientSettings = setting;
         }
 
         private void PokemonForm_Load(object sender, EventArgs e)
