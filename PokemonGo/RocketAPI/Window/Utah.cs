@@ -9,6 +9,15 @@ namespace PokemonGo.RocketAPI.Window
 {
     public static class Utah
     {
+        public static bool isHighCPorIV(GeneratedCode.PokemonData dubpokemon)
+        {
+            if (dubpokemon.Cp >= 1000)
+                return true;
+            if ((dubpokemon.IndividualAttack + dubpokemon.IndividualDefense + dubpokemon.IndividualStamina) / 45.0 >= 80)
+                return true;
+            return false;
+        }
+
         public static bool isEvolvable(PokemonId pokemon)
         {
             switch (pokemon)
