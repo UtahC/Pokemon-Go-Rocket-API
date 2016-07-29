@@ -17,6 +17,7 @@ namespace PokemonGo.RocketAPI.Console
         /// <summary>
         ///     Don't touch. User settings are in Console/App.config
         /// </summary>
+        public string Name { get; set; }
         public string TransferType => GetSetting() != string.Empty ? GetSetting() : "none";
         public int TransferCPThreshold => GetSetting() != string.Empty ? int.Parse(GetSetting(), CultureInfo.InvariantCulture) : 0;
         public int TransferIVThreshold => GetSetting() != string.Empty ? int.Parse(GetSetting(), CultureInfo.InvariantCulture) : 0;

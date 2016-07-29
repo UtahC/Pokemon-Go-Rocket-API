@@ -209,6 +209,7 @@ namespace PokemonGo.RocketAPI.Window
             var mapObjects = await client.GetMapObjects();
             if (pokeStops == null)
             {
+                await locationManagers[client.Name].update(client.Setting.DefaultLatitude, client.Setting.DefaultLongitude);
                 pokeStops = mapObjects.MapCells.SelectMany(i => i.Forts).Where(i => i.Type == FortType.Checkpoint && i.CooldownCompleteTimestampMs < DateTime.UtcNow.ToUnixTime());
             }
             HashSet<FortData> pokeStopSet = new HashSet<FortData>(pokeStops);
@@ -248,7 +249,11 @@ namespace PokemonGo.RocketAPI.Window
                     else
                         gotNothingFromStop = 0;
                     if (gotNothingFromStop > 5)
+                    {
+                        FarmingStops[client.Name] = false;
                         await ForceUnban(client);
+                        FarmingStops[client.Name] = true;
+                    }
 
                     var pokeStopMapObjects = await client.GetMapObjects();
 
@@ -459,40 +464,39 @@ namespace PokemonGo.RocketAPI.Window
             }
         }
 
-        public async Task UseLuckyEgg(Client client)
+        public async Task<bool> UseLuckyEgg(Client client)
         {
-            //if (client != null)
-            //{
-            //    try
-            //    {
-            //        IEnumerable<Item> myItems = await client.GetItems(client);
-            //        IEnumerable<Item> LuckyEggs = myItems.Where(i => (ItemId)i.Item_ == ItemId.ItemLuckyEgg);
-            //        Item LuckyEgg = LuckyEggs.FirstOrDefault();
-            //        if (LuckyEgg != null)
-            //        {
-            //            var useItemXpBoostRequest = await client.UseItemXpBoost(ItemId.ItemLuckyEgg);
-            //            _mainForm.ColoredConsoleWrite(Color.Green, $"Using a Lucky Egg, we have {LuckyEgg.Count} left.");
-            //            _mainForm.ColoredConsoleWrite(Color.Yellow, $"Lucky Egg Valid until: {DateTime.Now.AddMinutes(30).ToString()}");
-
-            //            var stripItem = sender as ToolStripMenuItem;
-            //            stripItem.Enabled = false;
-            //            await Task.Delay(30000);
-            //            stripItem.Enabled = true;
-            //        }
-            //        else
-            //        {
-            //            _mainForm.ColoredConsoleWrite(Color.Red, $"You don't have any Lucky Egg to use.");
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _mainForm.ColoredConsoleWrite(Color.Red, $"Unhandled exception in using lucky egg: {ex}");
-            //    }
-            //}
-            //else
-            //{
-            //    _mainForm.ColoredConsoleWrite(Color.Red, "Please start the bot before trying to use a lucky egg.");
-            //}
+            if (client != null)
+            {
+                try
+                {
+                    IEnumerable<Item> myItems = await client.GetItems(client);
+                    IEnumerable<Item> LuckyEggs = myItems.Where(i => (ItemId)i.Item_ == ItemId.ItemLuckyEgg);
+                    Item LuckyEgg = LuckyEggs.FirstOrDefault();
+                    if (LuckyEgg != null)
+                    {
+                        var useItemXpBoostRequest = await client.UseItemXpBoost(ItemId.ItemLuckyEgg);
+                        _mainForm.ColoredConsoleWrite(Color.Green, $"Using a Lucky Egg, we have {LuckyEgg.Count} left.");
+                        _mainForm.ColoredConsoleWrite(Color.Yellow, $"Lucky Egg Valid until: {DateTime.Now.AddMinutes(30).ToString()}");
+                        return true;
+                    }
+                    else
+                    {
+                        _mainForm.ColoredConsoleWrite(Color.Red, $"You don't have any Lucky Egg to use.");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _mainForm.ColoredConsoleWrite(Color.Red, $"Unhandled exception in using lucky egg: {ex}");
+                    return false;
+                }
+            }
+            else
+            {
+                _mainForm.ColoredConsoleWrite(Color.Red, "Please start the bot before trying to use a lucky egg.");
+                return false;
+            }
         }
 
         public static float Perfect(PokemonData poke)
@@ -562,12 +566,13 @@ namespace PokemonGo.RocketAPI.Window
 
             for (var i = 0; i < dupes.Count(); i++)
             {
+                bool isTooMany = dupes.ElementAt(i).Count() > 5;
                 for (var j = 0; j < dupes.ElementAt(i).Count() - 1; j++)
                 {
                     var dubpokemon = dupes.ElementAt(i).ElementAt(j).value;
                     if (dubpokemon.Favorite == 0)
                     {
-                        if (Utah.isHighCPorIV(dubpokemon))
+                        if (!isTooMany && Utah.isHighCPorIV(dubpokemon))
                             continue;
 
                         var transfer = await client.TransferPokemon(dubpokemon.Id);

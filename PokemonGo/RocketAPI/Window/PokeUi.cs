@@ -16,11 +16,11 @@ namespace PokemonGo.RocketAPI.Window
 {
     public partial class PokeUi : Form
     {
-        private static Client client;
-        public PokeUi(ISettings setting)
+        private Client client;
+        public PokeUi(Client client)
         {
             InitializeComponent();
-            ClientSettings = setting;
+            this.client = client;
         }
 
         private void PokeUi_Load(object sender, EventArgs e)
@@ -34,21 +34,21 @@ namespace PokemonGo.RocketAPI.Window
         {
 			EnabledButton(false);
 
-			client = new Client(ClientSettings);
+			//client = new Client(ClientSettings);
 
             try
             {
-                switch (ClientSettings.AuthType)
-                {
-                    case AuthType.Ptc:
-                        await client.DoPtcLogin(ClientSettings.PtcUsername, ClientSettings.PtcPassword);
-                        break;
-                    case AuthType.Google:
-                        await client.DoGoogleLogin(ClientSettings.Email, ClientSettings.Password);
-                        break;
-                }
-                //
-                await client.SetServer();
+                //switch (ClientSettings.AuthType)
+                //{
+                //    case AuthType.Ptc:
+                //        await client.DoPtcLogin(ClientSettings.PtcUsername, ClientSettings.PtcPassword);
+                //        break;
+                //    case AuthType.Google:
+                //        await client.DoGoogleLogin(ClientSettings.Email, ClientSettings.Password);
+                //        break;
+                //}
+                ////
+                //await client.SetServer();
                 var inventory = await client.GetInventory();
                 var pokemons =
                     inventory.InventoryDelta.InventoryItems
@@ -60,7 +60,9 @@ namespace PokemonGo.RocketAPI.Window
                     .Where(p => p != null && (int)p?.FamilyId > 0)
                     .OrderByDescending(p => (int)p.FamilyId);
 
-
+                var totalPokemonCount = pokemons.Count();
+                var nonDupPokemonCount = pokemons.Select(p => p.PokemonId).Distinct().Count();
+                toolStripStatusLabel1.Text = $"{nonDupPokemonCount} / {totalPokemonCount}";
 
 
                 var imageList = new ImageList { ImageSize = new Size(50, 50) };
@@ -91,13 +93,10 @@ namespace PokemonGo.RocketAPI.Window
                     var pokemonId2 = pokemon.PokemonId;
                     var pokemonName = pokemon.Id;
 
-                    listViewItem.Text = string.Format("{0}\n{1} CP", pokemon.PokemonId, pokemon.Cp);
-                    listViewItem.ToolTipText = currentCandy + " Candy\n" + currIv + "% IV";
-
+                    listViewItem.Text = string.Format("{0}\n{1}% IV\n{2} CP", pokemon.PokemonId, currIv, pokemon.Cp);
+                    listViewItem.ToolTipText = currentCandy + " Candy";
 
                     this.listView1.Items.Add(listViewItem);
-
-
                 }
 				EnabledButton(true);
 
@@ -200,7 +199,7 @@ namespace PokemonGo.RocketAPI.Window
             Execute();
         }
 
-        private static async Task evolvePokemon(PokemonData pokemon)
+        private async Task evolvePokemon(PokemonData pokemon)
         {
             try
             {
@@ -231,7 +230,7 @@ namespace PokemonGo.RocketAPI.Window
             catch (Exception ex) { await evolvePokemon(pokemon); }
         }
 
-        private static async Task transferPokemon(PokemonData pokemon)
+        private async Task transferPokemon(PokemonData pokemon)
         {
             try
             {
@@ -275,7 +274,7 @@ namespace PokemonGo.RocketAPI.Window
 			Execute();
 		}
 
-		private static async Task PowerUp(PokemonData pokemon)
+		private async Task PowerUp(PokemonData pokemon)
 		{
 			try
 			{

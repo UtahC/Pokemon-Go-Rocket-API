@@ -115,8 +115,13 @@ namespace PokemonGo.RocketAPI.Window
 
         private async void useLuckyEggToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("dont do that!");
-            await _botting.UseLuckyEgg(toolStripComboBox2.SelectedItem as Client);
+            //MessageBox.Show("dont do that!");
+            var stripItem = sender as ToolStripMenuItem;
+            stripItem.Enabled = false;
+            bool isSuccess = await _botting.UseLuckyEgg(toolStripComboBox2.SelectedItem as Client);
+            if (isSuccess)
+                await Task.Delay(30000);
+            stripItem.Enabled = true;
         }
 
         private void showAllToolStripMenuItem2_Click(object sender, EventArgs e)
@@ -133,9 +138,15 @@ namespace PokemonGo.RocketAPI.Window
 
         private void pokemonToolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("dont do that!");
-            //var pForm = new PokeUi();
-            //pForm.Show();
+            //MessageBox.Show("dont do that!");
+            Client client = toolStripComboBox2.SelectedItem as Client;
+            if (client != null)
+            {
+                var pForm = new PokeUi(client);
+                pForm.Show();
+            }
+            else
+                MessageBox.Show("clinet = null!");
         }
 
         private void toolStripComboBox2_TextChanged(object sender, EventArgs e)

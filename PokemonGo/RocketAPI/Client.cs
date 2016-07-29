@@ -28,26 +28,25 @@ namespace PokemonGo.RocketAPI
 {
     public class Client
     {
-        public string Name { get; set; }
-
         private HttpClientRequester _httpClientRequester;
-        private readonly HttpClient _httpClient;
-        private ISettings _settings;
+        private readonly HttpClient _httpClient;   
         private string _accessToken;
         private string _apiUrl;
         private AuthType _authType = AuthType.Google;
-
         private double _currentLat;
         private double _currentLng;
         private Request.Types.UnknownAuth _unknownAuth;
         public static string AccessToken { get; set; } = string.Empty;
 
+        public string Name { get; set; }
+        public ISettings Setting { get; private set; }
+
         public Client(ISettings settings)
         {
             Name = settings.Name;
 
-            _settings = settings;
-            SetCoordinates(_settings.DefaultLatitude, _settings.DefaultLongitude);
+            Setting = settings;
+            SetCoordinates(Setting.DefaultLatitude, Setting.DefaultLongitude);
             _httpClientRequester = new HttpClientRequester();
 
             //Setup HttpClient and create default headers
@@ -468,7 +467,7 @@ namespace PokemonGo.RocketAPI
 
         public async Task RecycleItems(Client client)
         {
-            var items = await GetItemsToRecycle(_settings, client);
+            var items = await GetItemsToRecycle(Setting, client);
 
             foreach (var item in items)
             {
@@ -476,7 +475,7 @@ namespace PokemonGo.RocketAPI
                 ColoredConsoleWrite(ConsoleColor.DarkCyan, $"Recycled {item.Count}x {((AllEnum.ItemId)item.Item_).ToString().Substring(4)}");
                 await Task.Delay(500);
             }
-            await Task.Delay(_settings.RecycleItemsInterval * 1000);
+            await Task.Delay(Setting.RecycleItemsInterval * 1000);
             RecycleItems(client);
         }
 
