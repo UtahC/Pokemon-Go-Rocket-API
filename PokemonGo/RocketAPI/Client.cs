@@ -255,7 +255,7 @@ namespace PokemonGo.RocketAPI
             ConsoleColor originalColor = System.Console.ForegroundColor;
             System.Console.ForegroundColor = color;
             System.Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + text);
-            File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + @"\Logs.txt", "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + text + "\n");
+            //File.AppendAllText(AppDomain.CurrentDomain.BaseDirectory + @"\Logs.txt", "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + text + "\n");
             System.Console.ForegroundColor = originalColor;
         }
 
@@ -435,8 +435,6 @@ namespace PokemonGo.RocketAPI
         public async Task<PlayerUpdateResponse> UpdatePlayerLocation(double lat, double lng)
         {
             SetCoordinates(lat, lng);
-            var latlng = _currentLat + ":" + _currentLng;
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "coords.txt", latlng);
 
             var customRequest = new Request.Types.PlayerUpdateProto
             {
@@ -555,6 +553,11 @@ namespace PokemonGo.RocketAPI
                 await
                     _httpClientRequester.PostProtoPayload<Request, UseItemRequest>(_httpClient, $"https://{_apiUrl}/rpc",
                         useItemRequest);
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

@@ -32,6 +32,7 @@ namespace PokemonGo.RocketAPI.Window
         {
             toolStripComboBox2.Items.Add("All");
             ConsoleText.Add("All", new StringBuilder(50000, 100000));
+            toolStripComboBox2.SelectedItem = "All";
             settings = new Dictionary<string, ISettings>();
             string json = File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}settings.json");
             var outerJObject = JObject.Parse(json);
@@ -68,7 +69,6 @@ namespace PokemonGo.RocketAPI.Window
                         ColoredConsoleWrite(Color.Red, $"Unhandled exception: {ex}");
                     }
                 });
-                toolStripComboBox2.Items.Add(setting.Name);
             }
         }
 
@@ -139,8 +139,11 @@ namespace PokemonGo.RocketAPI.Window
             string textToAppend = "[" + DateTime.Now.ToString("HH:mm:ss tt") + "] " + text + "\r\n";
             if (username != "All")
             {
-                logTextBox.SelectionColor = color;
-                logTextBox.AppendText(textToAppend);
+                if (toolStripComboBox2.SelectedItem.ToString() != "All" && username == toolStripComboBox2.SelectedItem.ToString())
+                {
+                    logTextBox.SelectionColor = color;
+                    logTextBox.AppendText(textToAppend);
+                }
 
                 ConsoleText[username].Append($"{color.ToString()}:{textToAppend}");
             }
@@ -237,10 +240,24 @@ namespace PokemonGo.RocketAPI.Window
             }
         }
 
+        private bool AddOrRemoveItemToComboBox(Client client, bool isAdd)
+        {
+            if (InvokeRequired)
+                return (bool)Invoke(new Func<Client, bool, bool>(AddOrRemoveItemToComboBox), client, isAdd);
+            if (isAdd)
+                toolStripComboBox2.Items.Add(client);
+            else if (!isAdd && toolStripComboBox2.Items.Contains(client))
+                toolStripComboBox2.Items.Remove(client);
+            else
+                return false;
+            return true;
+        }
+
         private async void Execute(ISettings setting)
         {
             Client client = new Client(setting);
             locationManagers[client.Name] = new LocationManager(client, setting.TravelSpeed);
+            AddOrRemoveItemToComboBox(client, true);
             try
             {
                 switch (setting.AuthType)
@@ -346,14 +363,15 @@ namespace PokemonGo.RocketAPI.Window
                 ColoredConsoleWrite(Color.Red, $"No nearby useful locations found. Please wait 10 seconds.", client.Name);
                 await Task.Delay(10000);
                 CheckVersion();
+                AddOrRemoveItemToComboBox(client, false);
                 Execute(setting);
             }
-            catch (TaskCanceledException) { ColoredConsoleWrite(Color.Red, "Task Canceled Exception - Restarting", client.Name); Execute(setting); }
-            catch (UriFormatException) { ColoredConsoleWrite(Color.Red, "System URI Format Exception - Restarting", client.Name); Execute(setting); }
-            catch (ArgumentOutOfRangeException) { ColoredConsoleWrite(Color.Red, "ArgumentOutOfRangeException - Restarting", client.Name); Execute(setting); }
-            catch (ArgumentNullException) { ColoredConsoleWrite(Color.Red, "Argument Null Refference - Restarting", client.Name); Execute(setting); }
-            catch (NullReferenceException) { ColoredConsoleWrite(Color.Red, "Null Refference - Restarting", client.Name); Execute(setting); }
-            catch (Exception ex) { ColoredConsoleWrite(Color.Red, ex.ToString(), client.Name); Execute(setting); }
+            catch (TaskCanceledException) { ColoredConsoleWrite(Color.Red, "Task Canceled Exception - Restarting", client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
+            catch (UriFormatException) { ColoredConsoleWrite(Color.Red, "System URI Format Exception - Restarting", client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
+            catch (ArgumentOutOfRangeException) { ColoredConsoleWrite(Color.Red, "ArgumentOutOfRangeException - Restarting", client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
+            catch (ArgumentNullException) { ColoredConsoleWrite(Color.Red, "Argument Null Refference - Restarting", client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
+            catch (NullReferenceException) { ColoredConsoleWrite(Color.Red, "Null Refference - Restarting", client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
+            catch (Exception ex) { ColoredConsoleWrite(Color.Red, ex.ToString(), client.Name); AddOrRemoveItemToComboBox(client, false); Execute(setting); }
         }
 
         private static string CallAPI(string elem, double lat, double lon)
