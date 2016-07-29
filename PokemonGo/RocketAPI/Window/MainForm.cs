@@ -175,6 +175,9 @@ namespace PokemonGo.RocketAPI.Window
                 }
                 }*/
 
+                if (!Utah.isEvolvable(pokemon.PokemonId))
+                    break;
+
                 var countOfEvolvedUnits = 0;
                 var xpCount = 0;
 
