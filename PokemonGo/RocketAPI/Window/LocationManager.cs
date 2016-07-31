@@ -6,10 +6,33 @@ using System.Threading.Tasks;
 
 namespace PokemonGo.RocketAPI.Window
 {
+    public class Coordinate
+    {
+        string Detail { get; set; }
+        double Lat { get; set; }
+        double Lon { get; set; }
+        public Coordinate(double lat, double lon, string detail = "")
+        {
+            Lat = lat;
+            Lon = lon;
+            Detail = detail;
+        }
+    }
+
+    public enum Location
+    {
+        SantaMonicaPier,
+        OperaHouse,
+        LillydaleLake
+    }
+
     public class LocationManager
     {
         private Client client;
         private double kilometersPerMillisecond;
+
+        public double GetSpeed() { return kilometersPerMillisecond * 3600000; }
+        public void SetSpeed(double speed) { kilometersPerMillisecond = speed / 3600000; }
 
         public LocationManager(Client client, double speed)
         {

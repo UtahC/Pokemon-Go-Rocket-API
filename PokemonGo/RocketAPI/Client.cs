@@ -41,13 +41,13 @@ namespace PokemonGo.RocketAPI
         public string Name { get; set; }
         public ISettings Setting { get; private set; }
 
-        public Client(ISettings settings)
+        public Client(ISettings settings, CancellationToken token)
         {
             Name = settings.Name;
-
             Setting = settings;
+            _httpClientRequester = new HttpClientRequester(token);
+
             SetCoordinates(Setting.DefaultLatitude, Setting.DefaultLongitude);
-            _httpClientRequester = new HttpClientRequester();
 
             //Setup HttpClient and create default headers
             var handler = new HttpClientHandler
@@ -120,7 +120,7 @@ namespace PokemonGo.RocketAPI
                 _authType = AuthType.Ptc;
             }
             catch (Newtonsoft.Json.JsonReaderException) { ColoredConsoleWrite(ConsoleColor.White, "Json Reader Exception - Server down? - Restarting"); DoPtcLogin(username, password); }
-            catch (Exception ex) { ColoredConsoleWrite(ConsoleColor.White, ex.ToString() + "Exception - Please report - Restarting"); DoPtcLogin(username, password); }
+            catch (Exception ex) { ColoredConsoleWrite(ConsoleColor.White, ex.ToString() + "Exception - Please report - Restarting"); await Task.Delay(20000); DoPtcLogin(username, password); }
         }
 
         public async Task<EncounterResponse> EncounterPokemon(ulong encounterId, string spawnPointGuid)

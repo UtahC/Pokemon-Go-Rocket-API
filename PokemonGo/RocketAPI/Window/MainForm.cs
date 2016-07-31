@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -11,6 +12,7 @@ namespace PokemonGo.RocketAPI.Window
     {
         private Botting _botting;
         private CancellationTokenSource _comboBoxTokenSource;
+        private CancellationTokenSource _bottingAbortTokenSource = new CancellationTokenSource();
 
         public MainForm()
         {
@@ -19,7 +21,7 @@ namespace PokemonGo.RocketAPI.Window
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _botting = new Botting(this);
+            _botting = new Botting(this, _bottingAbortTokenSource.Token);
 
             toolStripComboBox2.Items.Add("All");
             toolStripComboBox2.SelectedItem = "All";
@@ -149,12 +151,11 @@ namespace PokemonGo.RocketAPI.Window
                 MessageBox.Show("clinet = null!");
         }
 
-        private void toolStripComboBox2_TextChanged(object sender, EventArgs e)
+        private void toolStripComboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-
             var username = toolStripComboBox2.SelectedItem.ToString();
             var client = toolStripComboBox2.SelectedItem as Client;
-            
+
             if (!string.IsNullOrEmpty(username) && _botting.ConsoleText.ContainsKey(username))
             {
                 logTextBox.Clear();
@@ -172,6 +173,25 @@ namespace PokemonGo.RocketAPI.Window
                     //todo
                 }
             }
+        }
+
+        private async void gotoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _bottingAbortTokenSource.Cancel();
+            _bottingAbortTokenSource = new CancellationTokenSource();
+            _botting = new Botting(this, _bottingAbortTokenSource.Token);
+
+            await Task.Delay(5 * 60 * 1000);
+
+            _bottingAbortTokenSource.Cancel();
+            CoorToolStripTextBox.Text = "";
+            _bottingAbortTokenSource = new CancellationTokenSource();
+            _botting = new Botting(this, _bottingAbortTokenSource.Token);
+        }
+
+        public string GetCoorString()
+        {
+            return CoorToolStripTextBox.Text;
         }
     }
 }

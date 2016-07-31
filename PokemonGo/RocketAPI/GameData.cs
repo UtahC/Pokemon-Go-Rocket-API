@@ -62,10 +62,11 @@ namespace PokemonGo.RocketAPI
                 return exp - preExp;
 
             int expDiff = exp;//the level now
-            expDiff += GetXpRequired(preLevel - 1) - preExp;// the preLevel
-            for (int lv = preLevel + 1; lv < level; lv++)
-                expDiff += GetXpRequired(lv - 1);
+            exp = exp + GetXpRequired(preLevel + 1) - preExp;
+            for (int lv = preLevel + 2; lv <= level; lv++)
+                expDiff += GetXpRequired(lv);
             return expDiff;
         }
+
     }
 }

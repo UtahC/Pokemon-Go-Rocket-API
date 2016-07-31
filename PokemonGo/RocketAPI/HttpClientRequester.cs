@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 #endregion
 
@@ -13,6 +14,12 @@ namespace PokemonGo.RocketAPI
 {
     class HttpClientRequester
     {
+        public CancellationToken AbortToken { get; private set; }
+
+        public HttpClientRequester(CancellationToken token)
+        {
+            AbortToken = token;
+        }
         public async Task<Response> PostProto<TRequest>(HttpClient client, string url, TRequest request)
                   where TRequest : IMessage<TRequest>
         {
@@ -34,6 +41,9 @@ namespace PokemonGo.RocketAPI
                 string url, TRequest request) where TRequest : IMessage<TRequest>
                 where TResponsePayload : IMessage<TResponsePayload>, new()
         {
+            if (AbortToken.IsCancellationRequested)
+                throw new Exceptions.BottingAbortException();
+
             ByteString payload = null;
 
             while (waitingForResponse)
@@ -55,7 +65,7 @@ namespace PokemonGo.RocketAPI
                 //Decode payload
                 //todo: multi-payload support
 
-                await Task.Delay(30);// request every 30ms, up this value for not spam their server
+                await Task.Delay(50);// request every 30ms, up this value for not spam their server
             } while (response.Payload.Count < 1 && count < 30);
             payload = response.Payload[0];
 

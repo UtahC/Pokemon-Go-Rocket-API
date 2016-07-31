@@ -39,6 +39,8 @@ namespace PokemonGo.RocketAPI.Window
             this.todoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pokemonToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.useLuckyEggToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CoorToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
+            this.gotoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showAllToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
@@ -81,7 +83,9 @@ namespace PokemonGo.RocketAPI.Window
             this.toolStripComboBox2,
             this.todoToolStripMenuItem,
             this.pokemonToolStripMenuItem2,
-            this.useLuckyEggToolStripMenuItem});
+            this.useLuckyEggToolStripMenuItem,
+            this.CoorToolStripTextBox,
+            this.gotoToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(905, 28);
@@ -92,7 +96,7 @@ namespace PokemonGo.RocketAPI.Window
             // 
             this.toolStripComboBox2.Name = "toolStripComboBox2";
             this.toolStripComboBox2.Size = new System.Drawing.Size(121, 24);
-            this.toolStripComboBox2.TextChanged += new System.EventHandler(this.toolStripComboBox2_TextChanged);
+            this.toolStripComboBox2.SelectedIndexChanged += new System.EventHandler(this.toolStripComboBox2_SelectedIndexChanged);
             // 
             // todoToolStripMenuItem
             // 
@@ -114,6 +118,18 @@ namespace PokemonGo.RocketAPI.Window
             this.useLuckyEggToolStripMenuItem.Size = new System.Drawing.Size(101, 24);
             this.useLuckyEggToolStripMenuItem.Text = "Use Lucky Egg";
             this.useLuckyEggToolStripMenuItem.Click += new System.EventHandler(this.useLuckyEggToolStripMenuItem_Click);
+            // 
+            // CoorToolStripTextBox
+            // 
+            this.CoorToolStripTextBox.Name = "CoorToolStripTextBox";
+            this.CoorToolStripTextBox.Size = new System.Drawing.Size(100, 24);
+            // 
+            // gotoToolStripMenuItem
+            // 
+            this.gotoToolStripMenuItem.Name = "gotoToolStripMenuItem";
+            this.gotoToolStripMenuItem.Size = new System.Drawing.Size(78, 24);
+            this.gotoToolStripMenuItem.Text = "GO NOW!";
+            this.gotoToolStripMenuItem.Click += new System.EventHandler(this.gotoToolStripMenuItem_Click);
             // 
             // showAllToolStripMenuItem
             // 
@@ -165,6 +181,8 @@ namespace PokemonGo.RocketAPI.Window
         private System.Windows.Forms.ToolStripMenuItem pokemonToolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem useLuckyEggToolStripMenuItem;
         private System.Windows.Forms.ToolStripComboBox toolStripComboBox2;
+        private System.Windows.Forms.ToolStripTextBox CoorToolStripTextBox;
+        private System.Windows.Forms.ToolStripMenuItem gotoToolStripMenuItem;
     }
 }
 
